@@ -5,8 +5,8 @@
 #'
 #' Job files are created based on the brew template \code{template}. This
 #' file is processed with brew and then submitted to the queue using the
-#' \code{qsub} command. Jobs are killed using the \code{qdel} command and the
-#' list of running jobs is retrieved using \code{qselect}. The user must have
+#' \code{condor_qsub} command. Jobs are killed using the \code{condor_rm} command and the
+#' list of running jobs is retrieved using \code{condor_q}. The user must have
 #' the appropriate privileges to submit, delete and list jobs on the cluster
 #' (this is usually the case).
 #'
@@ -37,10 +37,10 @@ makeClusterFunctionsHTCondor = function(template = "htcondor", nodename = "local
     assertClass(jc, "JobCollection")
 
     outfile = cfBrewTemplate(reg, template, jc)
-    res = runOSCommand("condor_submit", shQuote(outfile), nodename = nodename)
+    res = runOSCommand("condor_qsub", shQuote(outfile), nodename = nodename)
 
     if (res$exit.code > 0L) {
-      cfHandleUnknownSubmitError("condor_submit", res$exit.code, res$output)
+      cfHandleUnknownSubmitError("condor_qsub", res$exit.code, res$output)
     } else {
       batch.id = stri_extract_first_regex(stri_flatten(res$output, " "), "\\d+")
       makeSubmitJobResult(status = 0L, batch.id = batch.id)
